@@ -23,6 +23,11 @@ CREATE TABLE active_session (
     updated_at INTEGER NOT NULL
 );
 
+CREATE TABLE app_settings (
+    setting_key TEXT NOT NULL PRIMARY KEY,
+    setting_value TEXT NOT NULL
+);
+
 insertEvent:
 INSERT INTO events(
     id,
@@ -118,3 +123,12 @@ WHERE singleton_id = 1;
 
 clearActiveSession:
 DELETE FROM active_session WHERE singleton_id = 1;
+
+selectSetting:
+SELECT setting_value
+FROM app_settings
+WHERE setting_key = ?;
+
+upsertSetting:
+INSERT OR REPLACE INTO app_settings(setting_key, setting_value)
+VALUES (?, ?);

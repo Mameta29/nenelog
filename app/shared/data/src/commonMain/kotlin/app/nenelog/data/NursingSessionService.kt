@@ -225,13 +225,7 @@ data class NursingTimelineItem(
 fun createNursingSessionService(
     factory: DatabaseDriverFactory,
     timezoneId: String = "device-local",
-): NursingSessionService {
-    val database = createNenelogDatabase(factory)
-    return NursingSessionService(
-        store = SqlDelightEventStore(database, timezoneId),
-        timezoneId = timezoneId,
-    )
-}
+): NursingSessionService = createNenelogServices(factory, timezoneId).nursing
 
 private fun String.toSide(): Side = when (trim().lowercase()) {
     "left" -> Side.LEFT
