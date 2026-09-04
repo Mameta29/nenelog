@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.screenshot)
 }
 
 dependencies {
@@ -15,11 +16,16 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.kotlinx.coroutines.core)
     add("debugImplementation", libs.vosk.android)
+    add("screenshotTestImplementation", libs.screenshot.validation.api)
+    add("screenshotTestImplementation", libs.compose.uiTooling)
+    add("screenshotTestImplementation", libs.compose.uiToolingPreview)
+    testImplementation(libs.junit)
 }
 
 android {
     namespace = "app.nenelog.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
+    experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
     defaultConfig {
         // docs/15: 2026-08-15 Nenelog 確定に伴い app.<name>.<name> 形式で確定

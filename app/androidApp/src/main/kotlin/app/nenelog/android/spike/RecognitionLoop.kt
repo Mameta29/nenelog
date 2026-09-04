@@ -44,6 +44,7 @@ class RecognitionLoop(
     private val tag: String,
     private val commandResponse: ((String) -> RecognitionReply?)? = null,
     private val onSessionEnded: (() -> Unit)? = null,
+    private val onStateChanged: (String, String?) -> Unit = { _, _ -> },
     private val observer: RecognitionLoopObserver? = null,
     private val biasingStrings: List<String>? = null,
 ) : NursingRecognitionSession {
@@ -66,6 +67,7 @@ class RecognitionLoop(
         running = true
         restartCount = 0
         listenAttemptCount = 0
+        onStateChanged("waiting", null)
         SpikeLog.add("[$tag] loop start locale=$locale preferOffline=$preferOffline")
 
         if (Build.VERSION.SDK_INT >= 31) {
@@ -83,6 +85,7 @@ class RecognitionLoop(
                     override fun onStart(utteranceId: String?) {}
                     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
                     override fun onError(utteranceId: String?) {
+                        onStateChanged("failure", null)
                         if (endSessionAfterCurrentSpeech) {
                             finishSession()
                         } else {
@@ -107,6 +110,7 @@ class RecognitionLoop(
 
     override fun stop() {
         running = false
+        onStateChanged("waiting", null)
         pendingRestart?.let(handler::removeCallbacks)
         pendingRestart = null
         handler.post {
@@ -157,6 +161,7 @@ class RecognitionLoop(
         r.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 readyForSpeech = true
+                onStateChanged("listening", null)
                 SpikeLog.add("[$tag] ready #$activeListenAttempt")
                 observer?.onReady(activeListenAttempt)
             }
@@ -211,10 +216,12 @@ class RecognitionLoop(
                     SpikeLog.add("[$tag] matched alternative: ${matched.first}")
                 }
                 if (reply != null) {
+                    onStateChanged("recognized", matched.first)
                     deliverReply(reply, restartReason = "after-results")
                 } else {
                     if (!best.isNullOrBlank() && commandResponse != null) {
                         SpikeLog.add("[$tag] ignored: not a standalone Nenelog command")
+                        onStateChanged("failure", best)
                         scheduleRestart("after-ignored-result")
                     } else {
                         scheduleRestart("after-results")
@@ -235,6 +242,14 @@ class RecognitionLoop(
                         errorCode = error,
                     ),
                 )
+                if (error == SpeechRecognizer.ERROR_NO_MATCH ||
+                    error == SpeechRecognizer.ERROR_AUDIO ||
+                    error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ||
+                    error == SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED ||
+                    error == SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE
+                ) {
+                    onStateChanged("failure", lastPartialText)
+                }
                 if (error == SpeechRecognizer.ERROR_NO_MATCH && commandResponse != null) {
                     val fallbackText = VoiceRecognitionFallback.selectLastPartialOnNoMatch(
                         lastPartial = lastPartialText,
@@ -273,6 +288,7 @@ class RecognitionLoop(
     private fun deliverReply(reply: RecognitionReply, restartReason: String) {
         if (speakBack && ttsReady && reply.spokenText.isNotBlank()) {
             endSessionAfterCurrentSpeech = reply.endSessionAfterSpeaking
+            onStateChanged("responding", null)
             SpikeLog.add("[$tag] response: ${reply.spokenText}")
             // 結果またはNO_MATCHが到着した時点で認識セッションは終了済み。cancel() は呼ばず、
             // TTS 完了コールバックからだけ次の認識を始める。
@@ -283,6 +299,7 @@ class RecognitionLoop(
                 "spike-${restartCount}",
             )
             if (result == TextToSpeech.ERROR) {
+                onStateChanged("failure", null)
                 if (endSessionAfterCurrentSpeech) {
                     finishSession()
                 } else {
@@ -309,6 +326,7 @@ class RecognitionLoop(
                 if (!running) return@Runnable
                 restartCount++
                 SpikeLog.add("[$tag] restart #$restartCount ($reason)")
+                onStateChanged("waiting", null)
                 startListening()
             }
             pendingRestart = task
@@ -323,6 +341,7 @@ class RecognitionLoop(
             pendingRestart?.let(handler::removeCallbacks)
             pendingRestart = null
             SpikeLog.add("[$tag] nursing session completed")
+            onStateChanged("waiting", null)
             if (onSessionEnded != null) {
                 onSessionEnded.invoke()
             } else {

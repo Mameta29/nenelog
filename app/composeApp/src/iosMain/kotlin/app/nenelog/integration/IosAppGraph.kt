@@ -15,6 +15,8 @@ internal object IosAppGraph {
             timezoneId = currentTimeZoneId(),
         )
     }
+
+    val nursing: NursingSessionService get() = services.nursing
 }
 
 internal fun iosServices(): NenelogServices = IosAppGraph.services

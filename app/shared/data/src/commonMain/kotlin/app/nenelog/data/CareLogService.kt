@@ -152,35 +152,36 @@ class CareLogService(
         var sleepDurationMillis = 0L
         var memoCount = 0
 
-        store.active()
-            .asSequence()
-            .filter { it.occurredAt.epochMillis in fromEpochMillis until untilEpochMillis }
-            .forEach { event ->
-                when (val payload = event.payload) {
-                    is EventPayload.Nursing -> {
-                        nursingCount++
-                        nursingDurationMillis += payload.totalDurationMillis
-                    }
-                    is EventPayload.Bottle -> {
-                        bottleCount++
-                        bottleAmountMl += payload.amountMl
-                    }
-                    is EventPayload.Diaper -> {
-                        diaperCount++
-                        if (payload.poop) poopCount++
-                    }
-                    is EventPayload.Sleep -> {
+        store.active().forEach { event ->
+            when (val payload = event.payload) {
+                is EventPayload.Sleep -> {
+                    val endedAt = payload.endedAt?.epochMillis ?: untilEpochMillis
+                    if (payload.startedAt.epochMillis < untilEpochMillis && endedAt > fromEpochMillis) {
                         val clippedStart = maxOf(payload.startedAt.epochMillis, fromEpochMillis)
-                        val clippedEnd = minOf(
-                            payload.endedAt?.epochMillis ?: untilEpochMillis,
-                            untilEpochMillis,
-                        )
+                        val clippedEnd = minOf(endedAt, untilEpochMillis)
                         sleepDurationMillis += (clippedEnd - clippedStart).coerceAtLeast(0)
                     }
-                    is EventPayload.Memo -> memoCount++
-                    else -> Unit
+                }
+                else -> if (event.occurredAt.epochMillis in fromEpochMillis until untilEpochMillis) {
+                    when (payload) {
+                        is EventPayload.Nursing -> {
+                            nursingCount++
+                            nursingDurationMillis += payload.totalDurationMillis
+                        }
+                        is EventPayload.Bottle -> {
+                            bottleCount++
+                            bottleAmountMl += payload.amountMl
+                        }
+                        is EventPayload.Diaper -> {
+                            diaperCount++
+                            if (payload.poop) poopCount++
+                        }
+                        is EventPayload.Memo -> memoCount++
+                        else -> Unit
+                    }
                 }
             }
+        }
 
         return CareSummary(
             nursingCount = nursingCount,

@@ -15,5 +15,6 @@ interface NursingRecognitionSessionFactory {
         locale: String,
         commandResponse: (String) -> RecognitionReply?,
         onSessionEnded: () -> Unit,
+        onStateChanged: (String, String?) -> Unit,
     ): NursingRecognitionSession
 }

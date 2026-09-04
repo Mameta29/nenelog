@@ -77,6 +77,15 @@ class CareLogServiceTest {
     }
 
     @Test
+    fun summary_clips_sleep_that_crosses_the_requested_range_boundary() {
+        service.recordSleep(durationMinutes = 90, endedAtEpochMillis = minutes(120))
+
+        val summary = service.summary(minutes(60), minutes(100))
+
+        assertEquals(minutes(40), summary.sleepDurationMillis)
+    }
+
+    @Test
     fun undo_revokes_the_latest_record_without_deleting_history() {
         val first = service.recordBath(minutes(1))
         val latest = service.recordMemo("remember this", minutes(2))

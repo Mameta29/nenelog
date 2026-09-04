@@ -54,6 +54,7 @@ class NursingVoiceService : Service() {
 
         startForegroundWithMicType()
         if (loop != null) return START_STICKY
+        publishState("waiting")
 
         // 画面オフでもCPUを維持(docs/04: PARTIAL_WAKE_LOCK)
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -68,10 +69,14 @@ class NursingVoiceService : Service() {
             commandHandler.handle(transcript, locale, System.currentTimeMillis())
         }
         val onSessionEnded = { stopSelf() }
+        val onStateChanged: (String, String?) -> Unit = { state, transcript ->
+            publishState(state, transcript)
+        }
         loop = createEvaluationVoskSession(
             locale = locale,
             commandResponse = commandResponse,
             onSessionEnded = onSessionEnded,
+            onStateChanged = onStateChanged,
         ) ?: RecognitionLoop(
             context = this,
             locale = locale,
@@ -80,6 +85,7 @@ class NursingVoiceService : Service() {
             tag = "FGS",
             commandResponse = commandResponse,
             onSessionEnded = onSessionEnded,
+            onStateChanged = onStateChanged,
         )
         loop?.start()
         handler.removeCallbacks(autoCloseCheck)
@@ -94,6 +100,7 @@ class NursingVoiceService : Service() {
         loop = null
         wakeLock?.let { if (it.isHeld) it.release() }
         wakeLock = null
+        publishState("waiting")
         SpikeLog.add("[FGS] service destroyed")
         super.onDestroy()
     }
@@ -108,6 +115,7 @@ class NursingVoiceService : Service() {
         locale: String,
         commandResponse: (String) -> RecognitionReply?,
         onSessionEnded: () -> Unit,
+        onStateChanged: (String, String?) -> Unit,
     ): NursingRecognitionSession? {
         if (!locale.startsWith("ja", ignoreCase = true)) return null
         return runCatching {
@@ -119,6 +127,7 @@ class NursingVoiceService : Service() {
                 locale = locale,
                 commandResponse = commandResponse,
                 onSessionEnded = onSessionEnded,
+                onStateChanged = onStateChanged,
             )
         }.onSuccess {
             SpikeLog.add("[FGS] using Vosk fixed grammar evaluation engine")
@@ -185,11 +194,34 @@ class NursingVoiceService : Service() {
         }
     }
 
+    private fun publishState(stateCode: String, transcript: String? = null) {
+        currentStateCode = stateCode
+        currentTranscript = transcript
+        sendBroadcast(
+            Intent(ACTION_VOICE_STATE_CHANGED)
+                .setPackage(packageName)
+                .putExtra(EXTRA_STATE_CODE, stateCode)
+                .putExtra(EXTRA_TRANSCRIPT, transcript),
+        )
+    }
+
     companion object {
         const val ACTION_STOP_LISTENING = "app.nenelog.android.voice.STOP_LISTENING"
         const val ACTION_STOP_AND_RECORD = "app.nenelog.android.voice.STOP_AND_RECORD"
         const val EXTRA_LOCALE = "locale"
         const val EXTRA_PREFER_OFFLINE = "prefer_offline"
+        const val ACTION_VOICE_STATE_CHANGED = "app.nenelog.android.voice.STATE_CHANGED"
+        const val EXTRA_STATE_CODE = "state_code"
+        const val EXTRA_TRANSCRIPT = "transcript"
+
+        @Volatile
+        private var currentStateCode: String = "waiting"
+
+        @Volatile
+        private var currentTranscript: String? = null
+
+        fun currentUiStateCode(): String = currentStateCode
+        fun currentUiTranscript(): String? = currentTranscript
         private const val VOSK_FACTORY_CLASS_NAME =
             "app.nenelog.android.spike.VoskNursingRecognitionSessionFactory"
         private const val NOTIFICATION_ID = 1001

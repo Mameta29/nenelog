@@ -66,6 +66,7 @@ struct SpeechSpikeView: View {
 final class IosNursingVoiceEngine: NSObject, ObservableObject {
     @Published var log: [String] = []
     @Published var isRunning = false
+    var onUiStateChange: ((String, String?) -> Void)?
 
     private let audioEngine = AVAudioEngine()
     private var recognizer: SFSpeechRecognizer?
@@ -84,6 +85,10 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
     private var endSessionAfterSpeech = false
 
     func add(_ line: String) { log.append(line); print("[Spike] \(line)") }
+
+    private func publishUiState(_ stateCode: String, transcript: String? = nil) {
+        onUiStateChange?(stateCode, transcript)
+    }
 
     func checkCapabilities(japanese: Bool) {
         let localeId = japanese ? "ja-JP" : "en-US"
@@ -115,10 +120,14 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
     func startLoop(localeIdentifier: String) {
         guard !running else { return }
         currentLocale = localeIdentifier.hasPrefix("ja") ? "ja-JP" : "en-US"
+        publishUiState("waiting")
         SFSpeechRecognizer.requestAuthorization { status in
             Task { @MainActor in
                 self.add("speech auth=\(status.rawValue)")
-                guard status == .authorized else { return }
+                guard status == .authorized else {
+                    self.publishUiState("failure")
+                    return
+                }
                 self.requestMicrophonePermission()
             }
         }
@@ -128,6 +137,7 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
         guard running || isRunning || audioEngine.isRunning || synthesizer.isSpeaking else { return }
         running = false
         isRunning = false
+        publishUiState("waiting")
         pendingRestart?.cancel()
         pendingRestart = nil
         invalidateRecognition(keepAudioIO: false)
@@ -143,7 +153,10 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
             Task { @MainActor [weak self] in
                 guard let self else { return }
                 self.add("mic granted=\(granted)")
-                guard granted else { return }
+                guard granted else {
+                    self.publishUiState("failure")
+                    return
+                }
                 self.running = true
                 self.isRunning = true
                 self.beginRecognition()
@@ -188,6 +201,7 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
             request = req
             requestSink.replace(with: req)
             add("recognition start (onDevice=\(req.requiresOnDeviceRecognition))")
+            publishUiState("listening")
 
             let input = audioEngine.inputNode
             if !tapInstalled {
@@ -233,6 +247,7 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
                             return
                         }
                         self.add("error: \(error.localizedDescription)")
+                        self.publishUiState("failure")
                         self.restartSoon(delayMs: 500)
                     }
                 }
@@ -241,6 +256,7 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
             audioStartFailureCount += 1
             let retryDelayMs = min(5_000, 750 * audioStartFailureCount)
             add("audio session error: \(error) — retry in \(retryDelayMs)ms")
+            publishUiState("failure")
             restartSoon(delayMs: retryDelayMs)
         }
     }
@@ -267,6 +283,7 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
         pendingEndpoint?.cancel()
         pendingEndpoint = nil
         add("FINAL(\(source)): \(trimmed)")
+        publishUiState("recognized", transcript: trimmed)
         let bridge = AppIntentDomainBridge()
         let epochMillis = Int64(Date().timeIntervalSince1970 * 1_000)
         guard let response = bridge.handleVoiceCommandResponse(
@@ -275,6 +292,7 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
             localeCode: currentLocale
         ) else {
             add("ignored: not a standalone Nenelog command")
+            publishUiState("failure", transcript: trimmed)
             invalidateRecognition()
             restartSoon(delayMs: 250)
             return
@@ -290,6 +308,7 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
     private func speakBack(_ text: String, endSessionAfterSpeaking: Bool) {
         invalidateRecognition()
         endSessionAfterSpeech = endSessionAfterSpeaking
+        publishUiState("responding")
 
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: currentLocale)
@@ -305,6 +324,7 @@ final class IosNursingVoiceEngine: NSObject, ObservableObject {
             guard let self else { return }
             self.pendingRestart = nil
             guard self.running else { return }
+            self.publishUiState("waiting")
             self.beginRecognition()
         }
         pendingRestart = workItem
@@ -341,9 +361,11 @@ extension IosNursingVoiceEngine: AVSpeechSynthesizerDelegate {
         Task { @MainActor in
             if self.endSessionAfterSpeech {
                 self.add("speak done → session complete")
+                self.publishUiState("waiting")
                 self.stop()
             } else {
                 self.add("speak done → 300ms後に認識再開")
+                self.publishUiState("waiting")
                 self.restartSoon(delayMs: 300)
             }
         }

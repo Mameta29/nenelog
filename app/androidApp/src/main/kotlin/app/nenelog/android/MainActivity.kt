@@ -1,28 +1,41 @@
 package app.nenelog.android
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import app.nenelog.ui.App
+import app.nenelog.ui.model.VoiceUiStateStore
+import app.nenelog.android.spike.NursingVoiceService
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var voiceController: AndroidNursingVoiceSessionController
-    private var voiceListening by mutableStateOf(false)
+    private val voiceStateStore = VoiceUiStateStore()
+    private var voiceReceiverRegistered = false
+    private val voiceStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != NursingVoiceService.ACTION_VOICE_STATE_CHANGED) return
+            voiceStateStore.update(
+                stateCode = intent.getStringExtra(NursingVoiceService.EXTRA_STATE_CODE) ?: "waiting",
+                lastTranscript = intent.getStringExtra(NursingVoiceService.EXTRA_TRANSCRIPT),
+            )
+        }
+    }
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
                 PackageManager.PERMISSION_GRANTED && hasActiveSession()
             ) {
-                voiceListening = voiceController.start()
+                updateVoiceStartState(voiceController.start())
             }
         }
 
@@ -31,16 +44,40 @@ class MainActivity : ComponentActivity() {
         voiceController = AndroidNursingVoiceSessionController(this)
         setContent {
             App(
-                service = AndroidAppGraph.nursing(this),
+                services = AndroidAppGraph.services(this),
                 voiceControlAvailable = true,
-                voiceListening = voiceListening,
+                voiceStateStore = voiceStateStore,
                 onVoiceSessionStart = ::startVoiceSessionWithPermission,
                 onVoiceSessionStop = {
                     voiceController.stop()
-                    voiceListening = false
+                    voiceStateStore.update("waiting")
                 },
             )
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(NursingVoiceService.ACTION_VOICE_STATE_CHANGED)
+        if (Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(voiceStateReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("DEPRECATION")
+            registerReceiver(voiceStateReceiver, filter)
+        }
+        voiceReceiverRegistered = true
+        voiceStateStore.update(
+            NursingVoiceService.currentUiStateCode(),
+            NursingVoiceService.currentUiTranscript(),
+        )
+    }
+
+    override fun onStop() {
+        if (voiceReceiverRegistered) {
+            unregisterReceiver(voiceStateReceiver)
+            voiceReceiverRegistered = false
+        }
+        super.onStop()
     }
 
     private fun startVoiceSessionWithPermission() {
@@ -58,11 +95,15 @@ class MainActivity : ComponentActivity() {
             }
         }
         if (missingPermissions.isEmpty()) {
-            voiceListening = voiceController.start()
+            updateVoiceStartState(voiceController.start())
         } else {
-            voiceListening = false
+            voiceStateStore.update("failure")
             permissionLauncher.launch(missingPermissions.toTypedArray())
         }
+    }
+
+    private fun updateVoiceStartState(started: Boolean) {
+        voiceStateStore.update(if (started) "waiting" else "failure")
     }
 
     private fun hasActiveSession(): Boolean =

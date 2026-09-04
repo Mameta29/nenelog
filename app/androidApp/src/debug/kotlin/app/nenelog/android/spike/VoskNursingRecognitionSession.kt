@@ -20,6 +20,7 @@ class VoskNursingRecognitionSessionFactory : NursingRecognitionSessionFactory {
         locale: String,
         commandResponse: (String) -> RecognitionReply?,
         onSessionEnded: () -> Unit,
+        onStateChanged: (String, String?) -> Unit,
     ): NursingRecognitionSession {
         val modelEntries = context.assets.list(MODEL_ASSET_DIRECTORY)
         check(!modelEntries.isNullOrEmpty()) { "Vosk model asset is not packaged" }
@@ -28,6 +29,7 @@ class VoskNursingRecognitionSessionFactory : NursingRecognitionSessionFactory {
             locale = locale,
             commandResponse = commandResponse,
             onSessionEnded = onSessionEnded,
+            onStateChanged = onStateChanged,
         )
     }
 }
@@ -37,6 +39,7 @@ private class VoskNursingRecognitionSession(
     private val locale: String,
     private val commandResponse: (String) -> RecognitionReply?,
     private val onSessionEnded: () -> Unit,
+    private val onStateChanged: (String, String?) -> Unit,
 ) : NursingRecognitionSession {
     private val handler = Handler(Looper.getMainLooper())
     private var running = false
@@ -56,6 +59,7 @@ private class VoskNursingRecognitionSession(
         handler.post {
             if (running) return@post
             running = true
+            onStateChanged("waiting", null)
             SpikeLog.add("[FGS-VOSK] session start locale=$locale gain=$INPUT_GAIN")
             initializeTts()
             initializeModel()
@@ -64,6 +68,7 @@ private class VoskNursingRecognitionSession(
 
     override fun stop() {
         running = false
+        onStateChanged("waiting", null)
         pendingRestart?.let(handler::removeCallbacks)
         pendingRestart = null
         fallback?.stop()
@@ -106,6 +111,7 @@ private class VoskNursingRecognitionSession(
                     }
                     model = loadedModel
                     SpikeLog.add("[FGS-VOSK] model ready")
+                    onStateChanged("waiting", null)
                     startListening()
                 }
             },
@@ -134,6 +140,7 @@ private class VoskNursingRecognitionSession(
             cycleActive = true
             val activeCycle = ++cycleNumber
             SpikeLog.add("[FGS-VOSK] listen #$activeCycle")
+            onStateChanged("listening", null)
             newSpeechService.startListening(recognitionListener, LISTEN_TIMEOUT_MILLIS)
             handler.postDelayed(
                 {
@@ -185,17 +192,20 @@ private class VoskNursingRecognitionSession(
 
         val reply = heard?.let(commandResponse)
         if (reply == null) {
+            if (heard != null && heard != "[unk]") onStateChanged("failure", heard)
             if (heard != null && heard != "[unk]") {
                 SpikeLog.add("[FGS-VOSK] ignored: not a standalone Nenelog command")
             }
             scheduleRestart("after-no-command", NO_COMMAND_RESTART_MILLIS)
         } else {
+            onStateChanged("recognized", heard)
             deliverReply(reply)
         }
     }
 
     private fun deliverReply(reply: RecognitionReply) {
         SpikeLog.add("[FGS-VOSK] response: ${reply.spokenText}")
+        onStateChanged("responding", null)
         endSessionAfterSpeech = reply.endSessionAfterSpeaking
         if (!ttsReady || reply.spokenText.isBlank()) {
             if (endSessionAfterSpeech) finishSession() else scheduleRestart("tts-not-ready")
@@ -208,6 +218,7 @@ private class VoskNursingRecognitionSession(
             "fgs-vosk-$cycleNumber",
         )
         if (result == TextToSpeech.ERROR) {
+            onStateChanged("failure", null)
             if (endSessionAfterSpeech) finishSession() else scheduleRestart("tts-start-error")
         }
     }
@@ -218,6 +229,7 @@ private class VoskNursingRecognitionSession(
         @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
         override fun onError(utteranceId: String?) {
             handler.post {
+                onStateChanged("failure", null)
                 if (endSessionAfterSpeech) finishSession() else scheduleRestart("tts-error")
             }
         }
@@ -239,6 +251,7 @@ private class VoskNursingRecognitionSession(
             pendingRestart = null
             if (!running || fallback != null) return@Runnable
             SpikeLog.add("[FGS-VOSK] restart ($reason)")
+            onStateChanged("waiting", null)
             startListening()
         }
         pendingRestart = task
@@ -249,6 +262,7 @@ private class VoskNursingRecognitionSession(
         if (!running) return
         endSessionAfterSpeech = false
         SpikeLog.add("[FGS-VOSK] nursing session completed")
+        onStateChanged("waiting", null)
         onSessionEnded()
     }
 
@@ -269,6 +283,7 @@ private class VoskNursingRecognitionSession(
             tag = "FGS-FALLBACK",
             commandResponse = commandResponse,
             onSessionEnded = onSessionEnded,
+            onStateChanged = onStateChanged,
         ).also { it.start() }
     }
 
