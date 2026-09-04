@@ -46,6 +46,8 @@ ActiveSession (シングルトン的状態、端末間同期対象)
 
 - **SQLDelight**(KMP標準。共通Kotlinからタイプセーフに使える)。
 - スキーマは追記型に合わせ `events` 単一テーブル+type別ビュー。`payload` はJSON列(kotlinx.serialization)。
+- ローカル端末設定は `app_settings(setting_key, setting_value)` に保存する。2026-09-04時点ではテーマ選択(`auto/light/dark/night`)を保持し、イベント履歴とは分離する。
+- `src/commonMain/sqldelight/databases/<version>.db` を移行の比較元として保存し、`verifySqlDelightMigration`を必須ゲートにする。
 - 全文検索はメモのみ(FTS5)。
 
 ## 同期・バックエンド

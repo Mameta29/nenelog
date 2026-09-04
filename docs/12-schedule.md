@@ -34,7 +34,8 @@
 - [ ] RevenueCat 統合+ペイウォール(深夜長押し仕様)+EntitlementGate
 - [ ] App Intents 5本(L3)+日英フレーズ
 - [ ] OneSignal 統合+連携プレー通知
-- [ ] ナイトモード+デザインシステム適用
+- [x] ナイトモード+デザインシステム適用
+  - 9/4: Quiet Linenを共通Compose UIへ実装。主要5画面・全手動記録・空/エラーを実DBへ接続し、Light/Dark/OLED Night、Auto(22:00〜06:00)、日英、音声5状態、48dp、スクリーンリーダー、fontScale 200%、Reduced Motionに対応。JVM/data、SQLDelight移行、Android APK、iOS arm64、基準画像25件の自動ゲート合格。iPhone/Pixelの最終UIスモークのみ継続する
 - **G3**: 全P0機能がfeature complete(粗くても通しで動く)
 
 ## Week 4: 9/8〜9/14 — 磨き+テスト配信開始(締切連動)

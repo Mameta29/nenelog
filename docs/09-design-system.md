@@ -47,9 +47,22 @@
 
 ### ダーク
 
-- 背景 `#12141C`、面 `#1B1E27`、主要文字 `#F5F1EA` を基準とする
+| 用途 | Token | 値 |
+|---|---|---:|
+| 画面背景 | `canvas` | `#12141C` |
+| 基本面 | `surface` | `#1B1E27` |
+| 静かな面 | `surfaceQuiet` | `#252832` |
+| 本文 | `ink` | `#F5F1EA` |
+| 補助文字 | `inkMuted` | `#B9B4AC` |
+| 操作色 | `sageStrong` | `#A9C8B5` |
+| ブランドセージ | `sage` | `#789A87` |
+| 淡いセージ | `sageSoft` | `#2A4034` |
+| 強調色 | `terracottaStrong` | `#E3A08A` |
+| 装飾色 | `terracotta` | `#B97561` |
+| 境界線 | `divider` | `#383B45` |
+
 - 日中・夕方にOS設定へ追従する一般ダークテーマ。深夜特化のナイトモードとは別物
-- セージ/テラコッタはライトより彩度を約10〜15%落とす。配色値はCompose実装時にコントラストテストで確定する
+- Compose実装とコントラスト自動テストで上記配色を確定した。文字に使う主要semantic roleはWCAG AAを満たす
 
 ### ナイト（Night Signal / C）
 
@@ -57,8 +70,11 @@
 |---|---|---:|---|
 | 画面背景 | `nightCanvas` | `#000000` | OLED純黒。余白を塗りつぶさない |
 | 必要な面 | `nightSurface` | `#120D09` | 操作にまとまりが必要な場所だけ |
+| 静かな面 | `nightSurfaceQuiet` | `#17100B` | 選択状態も大きな明色面にしない |
 | 主要文字 | `nightInk` | `#FFEDD7` | 純白は使わない |
 | 補助文字 | `nightMuted` | `#A5917C` | 小さい説明はAAを実測する |
+| 主操作 | `nightPrimary` | `#C7AB8C` | アイコン・小面積の操作表示に限定 |
+| 主操作面 | `nightPrimarySoft` | `#211812` | 音声状態などの低輝度背景 |
 | 強調/停止 | `nightAmber` | `#B34D2F` | 1画面の強調箇所は原則1つ |
 | 境界線 | `nightDivider` | `#3D3026` | 影の代わりに使う |
 
@@ -142,3 +158,11 @@
 - プラットフォームごとの都合で文言や情報階層を変えない。日英stringsと状態モデルを共有する
 
 比較用HTMLは `web/ui-concepts.html`。製品実装ではこの文書を正とし、HTML内の固定値を直接コピーせず、共有design tokenへ落とす。
+
+## 製品実装結果（2026-09-04）
+
+- `composeApp` の共通UIとしてホーム、授乳タイマー、Care Journal、まとめ、設定、全手動記録sheet、記録詳細・削除確認、空状態、データ読込エラーを実装した。実行時の表示値は `NursingSessionService` / `CareLogService` / SQLDelightから取得し、固定の経過時間や件数は表示しない
+- テーマは `Auto / Light / Dark / Night` をSQLDelightへ永続化する。Autoは端末の通常ダーク設定に追従し、端末ローカル時刻22:00〜06:00だけNight Signalを優先する
+- Android/iOSの既存音声エンジンから共有 `VoiceUiStateStore` へ、待機・認識中・認識済み・応答中・失敗を接続した。コマンド文法とTTS台本は変更していない
+- 操作領域48dp以上、VoiceOver/TalkBack向けlabel/state/live region、fontScale 200%、Reduced Motion時の静止表現を共通実装した
+- AndroidのCompose Preview Screenshot Testingで25基準画像を管理する。主要5画面×3テーマ、日英、fontScale 200%、空/エラー、音声5状態を含み、共通CMP UIの視覚回帰を検知する

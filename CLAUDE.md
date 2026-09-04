@@ -73,6 +73,7 @@
 - 2026-09-03: **Vosk入力補正は3倍を採用候補に確定**。同じ50cm小声で5倍は7/10となり、3倍の9/10を下回った。日本語L2の実機評価ビルドではVosk固定文法+3倍入力を実タイマー画面へ接続し、モデル不可/英語はOS認識へフォールバックする。最終採用は生活音・誤作動・48MB容量確認後。
 - 2026-09-03: **Android高精度L2を通常ホームへ接続し、両OSの実製品導線に合格**。Pixel 8で通常タイマー開始後、「左→右→左→右→ストップ」を言い直しなしで認識し、各TTS、左右各1分のtransaction保存、FGS終了まで完走。Vosk固定文法+3倍入力をdebug評価版に採用し、生活音・画面オフ長時間・48MB容量はR7で継続判断する。同日、iPhone XSも古い能力チェック版から通常ホーム版へ上書きし、実画面での操作・音声応答を確認した。
 - 2026-09-04: **UI方針をQuiet Linenに確定**。比較HTMLのAを全体の基本デザインとし、Bのフラットな日誌型タイムライン、CのOLED夜間モードを限定的に統合する。Dは標準的な操作規則の参考に留め、角丸・書体・間隔・音声状態表現は一系統に統一する（`docs/09-design-system.md`、`web/ui-concepts.html`）。
+- 2026-09-04: **Quiet Linen製品UIをiOS/Android共通Composeへ実装**。ホーム、授乳タイマー、カードレスCare Journal、まとめ、設定、全手動記録、空/エラーを実domain/SQLDelightへ接続。Light/Dark/OLED Nightと22:00〜06:00自動切替、日英、音声5状態、48dp、スクリーンリーダー、fontScale 200%、Reduced Motionを実装した。AndroidホストのCompose Preview Screenshot Testing 25件、JVM/data、SQLDelight migration、Android APK、iOS arm64/Xcode buildは合格。音声コマンド/TTS台本は不変で、最終実機UIスモークのみ残す。
 - (以降、週次ゲートの結果と方針変更をここに追記)
 
 ## 発信との連携

@@ -83,5 +83,8 @@ interface VoiceEngine {
 | domain | JVM単体テスト(kotest) | ステートマシン・インタープリタ・台本を網羅。カバレッジ90%+ |
 | data | SQLDelight in-memory + 同期の結合テスト | outbox/realtime往復 |
 | voice actual | 実機手動テストのチェックリスト(`research/device-test-checklist.md` を実装期に作成) | 認識成功率90%+/コマンド |
-| UI | CMPのscreenshot test(主要5画面×ライト/ダーク/ナイト) | デグレ検知 |
+| UI | AndroidホストのCompose Preview Screenshot Testingで共通CMP UIを検証(主要5画面×ライト/ダーク/ナイト) | デグレ検知 |
 | E2E | Maestro(iOS/Android両対応)で記録→タイムライン反映のスモーク | リリース前ゲート |
+
+- 2026-09-04: Quiet Linenの基準画像25件を追加。主要5画面×3テーマに加え、日英、fontScale 200%、空/エラー、音声5状態を網羅し、`validateDebugScreenshotTest`を製品UIの回帰ゲートとする
+- SQLDelightは各リリースschemaの`.db`を保存し、`verifySqlDelightMigration`で既存ユーザーDBからの移行を検証する。初回の`1.db`から設定永続化を追加したversion 2への移行は2026-09-04に合格
