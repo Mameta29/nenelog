@@ -1,0 +1,1896 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Nenelog — UI Direction Study</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --studio-bg: #efeeea;
+      --studio-surface: #f8f7f4;
+      --studio-ink: #171815;
+      --studio-muted: #62645d;
+      --studio-line: #d4d3cd;
+      --studio-accent: #294c3b;
+      --studio-focus: #245bdb;
+      font-family: Inter, "Avenir Next", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      font-synthesis: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--studio-bg);
+      color: var(--studio-ink);
+    }
+
+    button,
+    a {
+      touch-action: manipulation;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--studio-focus);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      top: 12px;
+      left: 12px;
+      transform: translateY(-160%);
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: #fff;
+      color: #111;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .studio {
+      width: min(1540px, 100%);
+      margin: 0 auto;
+      padding: 40px clamp(18px, 4vw, 64px) 72px;
+    }
+
+    .studio-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+      gap: clamp(30px, 6vw, 96px);
+      align-items: end;
+      padding: clamp(30px, 7vw, 92px) 0 48px;
+      border-bottom: 1px solid var(--studio-line);
+    }
+
+    .kicker,
+    .concept-id,
+    .app-eyebrow,
+    .section-label,
+    .metric-label,
+    .chart-label {
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .kicker {
+      margin: 0 0 18px;
+      color: var(--studio-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .studio-title {
+      max-width: 780px;
+      margin: 0;
+      font-family: "Iowan Old Style", "Hiragino Mincho ProN", YuMincho, serif;
+      font-size: clamp(48px, 8vw, 108px);
+      font-weight: 400;
+      letter-spacing: -.055em;
+      line-height: .9;
+    }
+
+    .studio-lead {
+      max-width: 560px;
+      margin: 28px 0 0;
+      color: var(--studio-muted);
+      font-size: clamp(16px, 2vw, 20px);
+      line-height: 1.7;
+    }
+
+    .study-note {
+      padding: 24px;
+      border: 1px solid var(--studio-line);
+      background: var(--studio-surface);
+    }
+
+    .study-note strong {
+      display: block;
+      margin-bottom: 9px;
+      font-size: 16px;
+    }
+
+    .study-note p {
+      margin: 0;
+      color: var(--studio-muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .lab-controls {
+      position: sticky;
+      z-index: 20;
+      top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 24px 0 38px;
+      padding: 12px;
+      border: 1px solid rgba(23, 24, 21, .12);
+      border-radius: 18px;
+      background: rgba(248, 247, 244, .94);
+      box-shadow: 0 8px 28px rgba(24, 25, 22, .08);
+      backdrop-filter: blur(14px);
+    }
+
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .control-label {
+      padding: 0 8px;
+      color: var(--studio-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .lab-button {
+      min-height: 48px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--studio-muted);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 650;
+      transition: background-color 180ms ease, color 180ms ease;
+    }
+
+    .lab-button:hover {
+      background: #e7e5df;
+      color: var(--studio-ink);
+    }
+
+    .lab-button[aria-pressed="true"] {
+      background: var(--studio-ink);
+      color: #fff;
+    }
+
+    .comparison-key {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      margin-bottom: 38px;
+      overflow: hidden;
+      border: 1px solid var(--studio-line);
+      background: var(--studio-line);
+    }
+
+    .key-item {
+      min-height: 116px;
+      padding: 20px;
+      background: var(--studio-surface);
+    }
+
+    .key-item span {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--studio-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+    }
+
+    .key-item strong {
+      font-family: "Iowan Old Style", "Hiragino Mincho ProN", YuMincho, serif;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1.3;
+    }
+
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .concept {
+      display: grid;
+      grid-template-columns: minmax(220px, .82fr) minmax(330px, 1.18fr);
+      gap: clamp(22px, 3vw, 42px);
+      align-items: start;
+      min-height: 912px;
+      padding: clamp(24px, 3vw, 38px);
+      border: 1px solid var(--studio-line);
+      background: var(--studio-surface);
+    }
+
+    .concept-copy {
+      position: sticky;
+      top: 106px;
+      padding-top: 8px;
+    }
+
+    .concept-id {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      margin-bottom: 22px;
+      padding: 0 10px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      color: var(--studio-muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .concept h2 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Hiragino Mincho ProN", YuMincho, serif;
+      font-size: clamp(31px, 3vw, 48px);
+      font-weight: 400;
+      letter-spacing: -.04em;
+      line-height: 1;
+    }
+
+    .concept-tagline {
+      margin: 18px 0 22px;
+      color: var(--studio-muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .trait-list {
+      display: grid;
+      gap: 0;
+      margin: 0 0 22px;
+      padding: 0;
+      list-style: none;
+      border-top: 1px solid var(--studio-line);
+    }
+
+    .trait-list li {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      gap: 10px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--studio-line);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .trait-list span {
+      color: var(--studio-muted);
+    }
+
+    .reference-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .reference-links a {
+      display: inline-flex;
+      min-height: 36px;
+      align-items: center;
+      color: var(--studio-ink);
+      font-size: 11px;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+    }
+
+    .select-concept {
+      width: 100%;
+      min-height: 50px;
+      border: 1px solid var(--studio-ink);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--studio-ink);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background-color 180ms ease, color 180ms ease;
+    }
+
+    .select-concept:hover,
+    .select-concept[aria-pressed="true"] {
+      background: var(--studio-ink);
+      color: #fff;
+    }
+
+    .select-concept:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+
+    .selected-banner {
+      display: none;
+      margin-top: 12px;
+      color: var(--studio-accent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .select-concept[aria-pressed="true"] + .selected-banner {
+      display: block;
+    }
+
+    .phone-wrap {
+      display: flex;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .phone {
+      width: min(100%, 354px);
+      height: 752px;
+      padding: 8px;
+      border: 1px solid #303236;
+      border-radius: 49px;
+      background: #111214;
+      box-shadow: 0 28px 68px rgba(13, 14, 15, .18);
+    }
+
+    .phone-inner {
+      position: relative;
+      display: flex;
+      height: 100%;
+      min-height: 0;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 41px;
+      background: var(--app-bg);
+      color: var(--ink);
+      font-family: var(--font-ui);
+    }
+
+    .phone-inner::before {
+      position: absolute;
+      z-index: 5;
+      top: 10px;
+      left: 50%;
+      width: 92px;
+      height: 25px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: var(--notch);
+      content: "";
+    }
+
+    .status-bar {
+      position: relative;
+      z-index: 6;
+      display: flex;
+      min-height: 47px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 21px;
+      color: var(--ink);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .signal {
+      display: flex;
+      gap: 2px;
+      align-items: end;
+      height: 10px;
+    }
+
+    .signal i {
+      display: block;
+      width: 2px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .signal i:nth-child(1) { height: 4px; }
+    .signal i:nth-child(2) { height: 6px; }
+    .signal i:nth-child(3) { height: 8px; }
+    .signal i:nth-child(4) { height: 10px; }
+
+    .battery {
+      width: 18px;
+      height: 9px;
+      padding: 1px;
+      border: 1px solid currentColor;
+      border-radius: 3px;
+    }
+
+    .battery::before {
+      display: block;
+      width: 75%;
+      height: 100%;
+      border-radius: 1px;
+      background: currentColor;
+      content: "";
+    }
+
+    .screens {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .app-screen {
+      display: none;
+      height: 100%;
+      overflow: hidden auto;
+      overscroll-behavior: contain;
+      padding: 8px 18px 22px;
+      scrollbar-width: none;
+    }
+
+    .app-screen::-webkit-scrollbar {
+      display: none;
+    }
+
+    .app-screen.is-active {
+      display: block;
+    }
+
+    .app-header {
+      display: flex;
+      min-height: 58px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .brand {
+      font-family: var(--font-display);
+      font-size: 25px;
+      font-weight: var(--display-weight);
+      letter-spacing: var(--brand-tracking);
+      line-height: 1;
+    }
+
+    .baby-chip,
+    .date-chip {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      padding: 0 12px;
+      border: var(--control-border);
+      border-radius: var(--pill-radius);
+      background: var(--quiet-surface);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .app-eyebrow,
+    .section-label,
+    .metric-label,
+    .chart-label {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 750;
+    }
+
+    .hero-card,
+    .voice-state,
+    .timeline-item,
+    .timer-stage,
+    .session-breakdown,
+    .summary-lead,
+    .chart-card {
+      border: var(--card-border);
+      border-radius: var(--card-radius);
+      background: var(--surface);
+      box-shadow: var(--card-shadow);
+    }
+
+    .hero-card {
+      padding: 21px;
+    }
+
+    .hero-time {
+      display: block;
+      margin-top: 7px;
+      font-family: var(--font-display);
+      font-size: 46px;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+      font-weight: var(--timer-weight);
+      letter-spacing: -.055em;
+      line-height: 1;
+    }
+
+    .hero-time small {
+      margin: 0 5px 0 2px;
+      color: var(--muted);
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .hero-hint {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .hero-hint::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      content: "";
+    }
+
+    .voice-state {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin: 11px 0 21px;
+      padding: 11px 13px;
+    }
+
+    .voice-icon {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .icon {
+      width: 19px;
+      height: 19px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
+    }
+
+    .voice-copy {
+      min-width: 0;
+    }
+
+    .voice-copy strong {
+      display: block;
+      overflow: hidden;
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .voice-copy span {
+      display: block;
+      overflow: hidden;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 9px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mini-wave {
+      display: flex;
+      width: 31px;
+      height: 24px;
+      gap: 3px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mini-wave i {
+      display: block;
+      width: 2px;
+      border-radius: 999px;
+      background: var(--primary);
+      animation: breathe 2s ease-in-out infinite;
+    }
+
+    .mini-wave i:nth-child(1),
+    .mini-wave i:nth-child(5) { height: 6px; animation-delay: -1.2s; }
+    .mini-wave i:nth-child(2),
+    .mini-wave i:nth-child(4) { height: 12px; animation-delay: -.8s; }
+    .mini-wave i:nth-child(3) { height: 20px; animation-delay: -.4s; }
+
+    @keyframes breathe {
+      0%, 100% { transform: scaleY(.58); opacity: .56; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 0 10px;
+    }
+
+    .section-heading h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: var(--heading-weight);
+      letter-spacing: -.02em;
+    }
+
+    .section-heading span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .quick-action {
+      display: grid;
+      min-width: 0;
+      min-height: 70px;
+      padding: 9px 4px;
+      place-items: center;
+      gap: 5px;
+      border: var(--control-border);
+      border-radius: var(--small-radius);
+      background: var(--quiet-surface);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+    }
+
+    .quick-action:hover {
+      border-color: var(--primary);
+      background: var(--interactive-hover);
+    }
+
+    .quick-action .icon {
+      width: 21px;
+      height: 21px;
+      color: var(--primary);
+    }
+
+    .quick-action span {
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 11px;
+      align-items: center;
+      padding: 13px;
+    }
+
+    .timeline-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .timeline-copy strong {
+      display: block;
+      font-size: 11px;
+    }
+
+    .timeline-copy span,
+    .timeline-time {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .screen-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 3px 0 14px;
+    }
+
+    .screen-title-row h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: var(--heading-weight);
+      letter-spacing: -.035em;
+    }
+
+    .live-chip {
+      display: inline-flex;
+      min-height: 31px;
+      align-items: center;
+      gap: 7px;
+      padding: 0 10px;
+      border-radius: var(--pill-radius);
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 9px;
+      font-weight: 750;
+    }
+
+    .live-chip::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse-dot 2s ease-in-out infinite;
+      content: "";
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: .38; }
+      50% { opacity: 1; }
+    }
+
+    .timer-stage {
+      padding: 23px 17px 17px;
+      text-align: center;
+    }
+
+    .timer-status {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .timer-number {
+      display: block;
+      margin: 7px 0 19px;
+      font-family: var(--font-display);
+      font-size: 57px;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+      font-weight: var(--timer-weight);
+      letter-spacing: -.065em;
+      line-height: 1;
+    }
+
+    .side-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .side-control {
+      aspect-ratio: 1;
+      min-height: 48px;
+      border: 1px solid var(--side-border);
+      border-radius: 50%;
+      background: var(--side-bg);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+    }
+
+    .side-control:hover {
+      border-color: var(--primary);
+    }
+
+    .side-control.is-selected {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .side-control strong,
+    .side-control span {
+      display: block;
+    }
+
+    .side-control strong {
+      font-family: var(--font-display);
+      font-size: 25px;
+      font-weight: var(--heading-weight);
+    }
+
+    .side-control span {
+      margin-top: 4px;
+      font-size: 9px;
+      opacity: .78;
+    }
+
+    .timer-screen .voice-state {
+      margin: 12px 0;
+    }
+
+    .stop-button,
+    .listen-button {
+      display: flex;
+      width: 100%;
+      min-height: 54px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      border: 0;
+      border-radius: var(--button-radius);
+      background: var(--accent);
+      color: var(--on-accent);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 750;
+      transition: opacity 180ms ease;
+    }
+
+    .stop-button:hover,
+    .listen-button:hover {
+      opacity: .86;
+    }
+
+    .session-breakdown {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+      padding: 13px;
+    }
+
+    .session-breakdown strong {
+      font-size: 10px;
+    }
+
+    .session-line {
+      height: 1px;
+      background: var(--line);
+    }
+
+    .session-breakdown span {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .summary-lead {
+      margin-bottom: 11px;
+      padding: 19px;
+    }
+
+    .summary-lead strong {
+      display: block;
+      margin-top: 7px;
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: var(--heading-weight);
+      letter-spacing: -.035em;
+      line-height: 1.18;
+    }
+
+    .summary-lead p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-bottom: 11px;
+    }
+
+    .metric {
+      min-height: 76px;
+      padding: 11px;
+      border: var(--card-border);
+      border-radius: var(--small-radius);
+      background: var(--quiet-surface);
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 9px;
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+      font-weight: var(--heading-weight);
+    }
+
+    .chart-card {
+      padding: 16px;
+    }
+
+    .chart-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .chart-head strong {
+      font-size: 11px;
+    }
+
+    .chart-head span {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .bar-chart {
+      display: flex;
+      height: 82px;
+      gap: 8px;
+      align-items: end;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bar-column {
+      display: flex;
+      height: 100%;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: end;
+      gap: 5px;
+    }
+
+    .bar {
+      width: min(100%, 15px);
+      height: var(--bar-height);
+      min-height: 5px;
+      border-radius: 999px 999px 2px 2px;
+      background: var(--primary);
+      opacity: .36;
+    }
+
+    .bar-column.today .bar {
+      opacity: 1;
+    }
+
+    .bar-column span {
+      color: var(--muted);
+      font-size: 8px;
+    }
+
+    .listen-button {
+      margin-top: 11px;
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .bottom-nav {
+      display: grid;
+      min-height: 67px;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 5px 12px max(7px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line);
+      background: var(--nav-bg);
+    }
+
+    .nav-button {
+      display: grid;
+      min-width: 48px;
+      min-height: 52px;
+      place-items: center;
+      gap: 2px;
+      border: 0;
+      border-radius: var(--small-radius);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .nav-button .icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .nav-button span {
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .nav-button.is-active {
+      color: var(--primary);
+    }
+
+    .app-toast {
+      position: absolute;
+      z-index: 10;
+      right: 16px;
+      bottom: 78px;
+      left: 16px;
+      padding: 13px 16px;
+      transform: translateY(16px);
+      border-radius: 14px;
+      background: var(--toast-bg);
+      color: var(--toast-ink);
+      font-size: 11px;
+      font-weight: 650;
+      opacity: 0;
+      pointer-events: none;
+      text-align: center;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .app-toast.is-visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* A — Quiet Linen: current Nenelog direction refined with warm editorial restraint. */
+    .concept-a {
+      --app-bg: #faf6f0;
+      --surface: #fffdf9;
+      --quiet-surface: #f1ece4;
+      --ink: #213229;
+      --muted: #68726c;
+      --primary: #3d6652;
+      --primary-soft: #dce8df;
+      --on-primary: #fffdf8;
+      --accent: #a4513f;
+      --on-accent: #fffaf5;
+      --line: #ded8ce;
+      --side-border: #d3d8d2;
+      --side-bg: #f6f2ec;
+      --interactive-hover: #e6ede7;
+      --nav-bg: rgba(250, 246, 240, .96);
+      --notch: #121313;
+      --toast-bg: #213229;
+      --toast-ink: #fffdf8;
+      --font-ui: "Avenir Next", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      --font-display: "Avenir Next", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      --display-weight: 650;
+      --heading-weight: 650;
+      --timer-weight: 500;
+      --brand-tracking: -.035em;
+      --card-radius: 24px;
+      --small-radius: 15px;
+      --pill-radius: 999px;
+      --button-radius: 17px;
+      --card-border: 1px solid rgba(61, 102, 82, .07);
+      --control-border: 1px solid transparent;
+      --card-shadow: 0 7px 22px rgba(79, 64, 49, .055);
+      border-color: #3d6652;
+    }
+
+    .concept-a .hero-card {
+      background: #e4ece5;
+    }
+
+    /* The selected direction borrows B's flat journal treatment only for the timeline. */
+    .concept-a .timeline-item {
+      padding-right: 4px;
+      padding-left: 4px;
+      border: 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .concept-a .timeline-mark {
+      border: 1px solid var(--primary);
+      background: transparent;
+    }
+
+    /* C's OLED palette applied to the complete A system; toggle in the preview toolbar. */
+    .concept-a.preview-night {
+      --app-bg: #000000;
+      --surface: #120d09;
+      --quiet-surface: #17100b;
+      --ink: #ffedd7;
+      --muted: #a5917c;
+      --primary: #ffedd7;
+      --primary-soft: #2a1b12;
+      --on-primary: #100904;
+      --accent: #b34d2f;
+      --on-accent: #fff2e2;
+      --line: #3d3026;
+      --side-border: #514235;
+      --side-bg: #0a0705;
+      --interactive-hover: #25170f;
+      --nav-bg: #000000;
+      --notch: #17100b;
+      --toast-bg: #ffedd7;
+      --toast-ink: #100904;
+      --card-border: 1px solid #3d3026;
+      --control-border: 1px solid #3d3026;
+      --card-shadow: none;
+    }
+
+    .concept-a.preview-night .hero-card {
+      background: var(--surface);
+    }
+
+    .concept-a.preview-night .voice-icon {
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .concept-a.preview-night .timeline-mark {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .concept-a.preview-night .mini-wave i,
+    .concept-a.preview-night .bar {
+      background: var(--accent);
+    }
+
+    .concept-a.preview-night .side-control.is-selected {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+
+    /* B — Care Journal: editorial paper, oxblood ink, hairlines and almost no chrome. */
+    .concept-b {
+      --app-bg: #faf9f5;
+      --surface: transparent;
+      --quiet-surface: #f4f0e8;
+      --ink: #4a0a05;
+      --muted: #886f69;
+      --primary: #4a0a05;
+      --primary-soft: #eee2dd;
+      --on-primary: #faf9f5;
+      --accent: #4a0a05;
+      --on-accent: #faf9f5;
+      --line: rgba(74, 10, 5, .24);
+      --side-border: #4a0a05;
+      --side-bg: transparent;
+      --interactive-hover: #eee2dd;
+      --nav-bg: #faf9f5;
+      --notch: #4a0a05;
+      --toast-bg: #4a0a05;
+      --toast-ink: #faf9f5;
+      --font-ui: "Avenir Next", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      --font-display: "Iowan Old Style", "Hiragino Mincho ProN", YuMincho, serif;
+      --display-weight: 400;
+      --heading-weight: 400;
+      --timer-weight: 400;
+      --brand-tracking: -.02em;
+      --card-radius: 0;
+      --small-radius: 2px;
+      --pill-radius: 999px;
+      --button-radius: 999px;
+      --card-border: 0;
+      --control-border: 1px solid rgba(74, 10, 5, .28);
+      --card-shadow: none;
+    }
+
+    .concept-b .hero-card,
+    .concept-b .timer-stage,
+    .concept-b .summary-lead,
+    .concept-b .chart-card {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .concept-b .voice-state,
+    .concept-b .timeline-item,
+    .concept-b .session-breakdown {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .concept-b .hero-card,
+    .concept-b .voice-state,
+    .concept-b .timeline-item,
+    .concept-b .timer-stage,
+    .concept-b .session-breakdown,
+    .concept-b .summary-lead,
+    .concept-b .chart-card {
+      padding-right: 4px;
+      padding-left: 4px;
+    }
+
+    .concept-b .quick-grid {
+      gap: 0;
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+    }
+
+    .concept-b .quick-action {
+      border-top: 0;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      border-left: 0;
+      background: transparent;
+    }
+
+    .concept-b .voice-icon,
+    .concept-b .timeline-mark {
+      border: 1px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+    }
+
+    /* C — Night Signal: OLED night mode with ORYZO warmth and Linear precision. */
+    .concept-c {
+      --app-bg: #000000;
+      --surface: #120d09;
+      --quiet-surface: #17100b;
+      --ink: #ffedd7;
+      --muted: #a5917c;
+      --primary: #ffedd7;
+      --primary-soft: #2a1b12;
+      --on-primary: #100904;
+      --accent: #b34d2f;
+      --on-accent: #fff2e2;
+      --line: #3d3026;
+      --side-border: #514235;
+      --side-bg: #0a0705;
+      --interactive-hover: #25170f;
+      --nav-bg: #000000;
+      --notch: #17100b;
+      --toast-bg: #ffedd7;
+      --toast-ink: #100904;
+      --font-ui: "Avenir Next", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      --font-display: "Avenir Next", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      --display-weight: 500;
+      --heading-weight: 500;
+      --timer-weight: 400;
+      --brand-tracking: .08em;
+      --card-radius: 12px;
+      --small-radius: 7px;
+      --pill-radius: 999px;
+      --button-radius: 999px;
+      --card-border: 1px solid #3d3026;
+      --control-border: 1px solid #3d3026;
+      --card-shadow: none;
+    }
+
+    .concept-c .app-eyebrow,
+    .concept-c .section-label,
+    .concept-c .metric-label,
+    .concept-c .chart-label,
+    .concept-c .quick-action span,
+    .concept-c .nav-button span {
+      letter-spacing: .14em;
+    }
+
+    .concept-c .hero-card {
+      border-style: dashed;
+    }
+
+    .concept-c .voice-icon,
+    .concept-c .timeline-mark {
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .concept-c .mini-wave i {
+      background: var(--accent);
+    }
+
+    .concept-c .side-control.is-selected {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .concept-c .bar {
+      background: var(--accent);
+    }
+
+    /* D — Native Clarity: Apple-like white space and familiar platform controls. */
+    .concept-d {
+      --app-bg: #f5f5f7;
+      --surface: #ffffff;
+      --quiet-surface: #ffffff;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --primary: #0066cc;
+      --primary-soft: #e7f1fb;
+      --on-primary: #ffffff;
+      --accent: #1d1d1f;
+      --on-accent: #ffffff;
+      --line: #dedee3;
+      --side-border: transparent;
+      --side-bg: #ececf0;
+      --interactive-hover: #e7f1fb;
+      --nav-bg: rgba(245, 245, 247, .96);
+      --notch: #141416;
+      --toast-bg: #1d1d1f;
+      --toast-ink: #ffffff;
+      --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Hiragino Sans", sans-serif;
+      --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Hiragino Sans", sans-serif;
+      --display-weight: 700;
+      --heading-weight: 700;
+      --timer-weight: 650;
+      --brand-tracking: -.035em;
+      --card-radius: 28px;
+      --small-radius: 17px;
+      --pill-radius: 999px;
+      --button-radius: 999px;
+      --card-border: 0;
+      --control-border: 0;
+      --card-shadow: none;
+    }
+
+    .concept-d .hero-card {
+      padding-top: 28px;
+      padding-bottom: 28px;
+    }
+
+    .concept-d .voice-state {
+      background: #e9e9ee;
+    }
+
+    .concept-d .quick-action {
+      min-height: 75px;
+    }
+
+    .concept-d .side-control.is-selected {
+      box-shadow: inset 0 0 0 5px #d6e9fb;
+    }
+
+    .recommendation {
+      display: grid;
+      grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr);
+      gap: clamp(28px, 6vw, 90px);
+      margin-top: 24px;
+      padding: clamp(34px, 6vw, 74px);
+      background: #19241e;
+      color: #f7f3eb;
+    }
+
+    .recommendation h2 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Hiragino Mincho ProN", YuMincho, serif;
+      font-size: clamp(36px, 5vw, 66px);
+      font-weight: 400;
+      letter-spacing: -.04em;
+      line-height: 1;
+    }
+
+    .recommendation-copy p {
+      margin: 0 0 17px;
+      color: #d1d8d3;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .recommendation-copy strong {
+      color: #fffdf8;
+    }
+
+    .selection-output {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, .18);
+      font-size: 14px;
+    }
+
+    .selection-output span {
+      color: #e4b09d;
+      font-weight: 750;
+    }
+
+    @media (max-width: 1320px) {
+      .concept-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .concept {
+        grid-template-columns: minmax(240px, 1fr) minmax(330px, 1.1fr);
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .studio {
+        padding-right: 14px;
+        padding-left: 14px;
+      }
+
+      .studio-header,
+      .recommendation {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-key {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .concept {
+        grid-template-columns: 1fr;
+        padding: 24px 14px 30px;
+      }
+
+      .concept-copy {
+        position: static;
+        padding: 8px 10px 0;
+      }
+
+      .phone {
+        width: min(100%, 354px);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .studio-title {
+        font-size: 54px;
+      }
+
+      .comparison-key {
+        grid-template-columns: 1fr;
+      }
+
+      .lab-controls {
+        top: 6px;
+      }
+
+      .control-group {
+        width: 100%;
+      }
+
+      .control-label {
+        width: 100%;
+      }
+
+      .lab-button {
+        flex: 1;
+        padding: 0 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#concepts">デザイン案へ移動</a>
+
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute">
+    <symbol id="icon-mic" viewBox="0 0 24 24">
+      <rect x="8.2" y="3" width="7.6" height="12" rx="3.8"></rect>
+      <path d="M5.5 11.8a6.5 6.5 0 0 0 13 0M12 18.3V22M8.5 22h7"></path>
+    </symbol>
+    <symbol id="icon-nursing" viewBox="0 0 24 24">
+      <path d="M12 3.5c-3.9 0-7 3-7 6.7 0 5.2 7 10.3 7 10.3s7-5.1 7-10.3c0-3.7-3.1-6.7-7-6.7Z"></path>
+      <path d="M9.3 10.5c.9-1 1.8-1.5 2.7-1.5s1.8.5 2.7 1.5"></path>
+    </symbol>
+    <symbol id="icon-bottle" viewBox="0 0 24 24">
+      <path d="M9 3h6M10 3v4l-2 2v10.5c0 .8.7 1.5 1.5 1.5h5c.8 0 1.5-.7 1.5-1.5V9l-2-2V3M8 12h8"></path>
+    </symbol>
+    <symbol id="icon-diaper" viewBox="0 0 24 24">
+      <path d="M4 7.5c2 1.2 4.7 1.8 8 1.8s6-.6 8-1.8v8c0 3-3.6 5.5-8 5.5s-8-2.5-8-5.5v-8Z"></path>
+      <path d="M4 12c3.1 0 5.2 1.1 6.3 3.2M20 12c-3.1 0-5.2 1.1-6.3 3.2"></path>
+    </symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24">
+      <path d="M20.5 15.2A8.5 8.5 0 0 1 8.8 3.5 8.6 8.6 0 1 0 20.5 15.2Z"></path>
+    </symbol>
+    <symbol id="icon-home" viewBox="0 0 24 24">
+      <path d="m3.5 10.5 8.5-7 8.5 7V21h-6v-6h-5v6h-6V10.5Z"></path>
+    </symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14"></path>
+    </symbol>
+    <symbol id="icon-chart" viewBox="0 0 24 24">
+      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path>
+    </symbol>
+    <symbol id="icon-volume" viewBox="0 0 24 24">
+      <path d="M5 9v6h4l5 4V5L9 9H5ZM17 9c1.2 1.5 1.2 4.5 0 6M19.5 6.5c3 3 3 8 0 11"></path>
+    </symbol>
+  </svg>
+
+  <main class="studio" id="main">
+    <header class="studio-header">
+      <div>
+        <p class="kicker">Nenelog · Product UI direction study · 2026</p>
+        <h1 class="studio-title">Quiet by design.</h1>
+        <p class="studio-lead">深夜、片手、抱っこ中。4案の比較を経て、AのQuiet Linenを骨格に、BのタイムラインとCのナイトモードを統合する方向へ確定しました。</p>
+      </div>
+      <aside class="study-note">
+        <strong>デザイン方向は選定済みです</strong>
+        <p>選定案Aは昼／ナイトを切り替えられ、タイムラインにはBの表現を反映済みです。製品コードへの本実装は次セッションで行います。</p>
+      </aside>
+    </header>
+
+    <nav class="lab-controls" aria-label="プレビュー操作">
+      <div class="control-group" role="group" aria-label="表示画面">
+        <span class="control-label">全案の画面</span>
+        <button class="lab-button" type="button" data-global-screen="home" aria-pressed="true">ホーム</button>
+        <button class="lab-button" type="button" data-global-screen="timer" aria-pressed="false">タイマー</button>
+        <button class="lab-button" type="button" data-global-screen="summary" aria-pressed="false">まとめ</button>
+      </div>
+      <div class="control-group" role="group" aria-label="プレビュー言語">
+        <span class="control-label">表示言語</span>
+        <button class="lab-button" type="button" data-language="ja" aria-pressed="true">日本語</button>
+        <button class="lab-button" type="button" data-language="en" aria-pressed="false">English</button>
+      </div>
+      <div class="control-group" role="group" aria-label="選定案Aのテーマ">
+        <span class="control-label">選定案A</span>
+        <button class="lab-button" type="button" data-selected-theme="day" aria-pressed="true">昼</button>
+        <button class="lab-button" type="button" data-selected-theme="night" aria-pressed="false">ナイト</button>
+      </div>
+    </nav>
+
+    <section class="comparison-key" aria-label="比較するときの基準">
+      <div class="key-item"><span>01 / 深夜</span><strong>最低輝度でも眩しくないか</strong></div>
+      <div class="key-item"><span>02 / 片手</span><strong>迷わず押せる大きさと配置か</strong></div>
+      <div class="key-item"><span>03 / 音声</span><strong>聞いている状態が伝わるか</strong></div>
+      <div class="key-item"><span>04 / 人間味</span><strong>テンプレートっぽく見えないか</strong></div>
+    </section>
+
+    <section class="concept-grid" id="concepts" aria-label="確定案と3つの比較元">
+      <article class="concept concept-a" data-concept="A">
+        <div class="concept-copy">
+          <span class="concept-id">Selected · Final direction</span>
+          <h2>Quiet Linen</h2>
+          <p class="concept-tagline">温かな生成りとセージを全体の骨格に、Bの日誌型タイムラインとCのOLEDナイトモードを統合した確定案。静かでありながら、声と今の状態は明瞭に伝えます。</p>
+          <ul class="trait-list">
+            <li><span>全体</span><strong>A · 温かい、穏やか、生活に馴染む</strong></li>
+            <li><span>履歴</span><strong>B · 罫線と余白で読む育児日誌</strong></li>
+            <li><span>深夜</span><strong>C · OLED黒と減光アンバー</strong></li>
+            <li><span>操作</span><strong>48pt以上、状態を文字でも明示</strong></li>
+          </ul>
+          <div class="reference-links" aria-label="参考デザイン">
+            <a href="https://styles.refero.design/style/031056ff-7af1-46db-8daa-115f731c5d26" target="_blank" rel="noreferrer">ElevenLabs ↗</a>
+            <a href="https://styles.refero.design/style/01771d1f-43c6-4e91-88c5-e4d213fe4ff2" target="_blank" rel="noreferrer">Paper ↗</a>
+          </div>
+          <button class="select-concept" type="button" aria-pressed="true" disabled>選定済み：Quiet Linen</button>
+          <div class="selected-banner" aria-live="polite">全体の基本デザインとして採用</div>
+        </div>
+        <div class="phone-wrap"><div class="phone" data-phone="A"><div class="phone-mount"></div></div></div>
+      </article>
+
+      <article class="concept concept-b" data-concept="B">
+        <div class="concept-copy">
+          <span class="concept-id">B · Editorial</span>
+          <h2>Care Journal</h2>
+          <p class="concept-tagline">育児記録を「アプリのカード一覧」ではなく、静かな育児日誌として見せる案。えんじ色のインク、罫線、明朝見出しで人が編集したような佇まいにします。</p>
+          <ul class="trait-list">
+            <li><span>印象</span><strong>知的・親密・長く残したくなる</strong></li>
+            <li><span>独自性</span><strong>非常に高い。AIテンプレ感が最も少ない</strong></li>
+            <li><span>操作性</span><strong>大ボタンは維持。情報探索は少し慣れが必要</strong></li>
+            <li><span>実装負荷</span><strong>中。書体と罫線の精度が重要</strong></li>
+          </ul>
+          <div class="reference-links" aria-label="参考デザイン">
+            <a href="https://styles.refero.design/style/1f9089e1-4170-482f-b988-afe1124a70a9" target="_blank" rel="noreferrer">In Common With ↗</a>
+            <a href="https://styles.refero.design/style/3f296d6e-6a1c-45db-829b-afb078d49ab4" target="_blank" rel="noreferrer">Refero ↗</a>
+          </div>
+          <button class="select-concept" type="button" aria-pressed="true" disabled>タイムライン表現を採用</button>
+          <div class="selected-banner" aria-live="polite">罫線・時刻列・余白だけを統合</div>
+        </div>
+        <div class="phone-wrap"><div class="phone" data-phone="B"><div class="phone-mount"></div></div></div>
+      </article>
+
+      <article class="concept concept-c" data-concept="C">
+        <div class="concept-copy">
+          <span class="concept-id">C · Night first</span>
+          <h2>Night Signal</h2>
+          <p class="concept-tagline">OLED黒を土台に、クリームの文字と減光アンバーだけで作る深夜特化案。カードの影をなくし、細い境界線と声の信号だけが浮かぶ精密な道具です。</p>
+          <ul class="trait-list">
+            <li><span>印象</span><strong>静寂・集中・夜間の専門道具</strong></li>
+            <li><span>独自性</span><strong>高い。デモ動画で最も映える</strong></li>
+            <li><span>操作性</span><strong>暗所で最強。日中版を別途設計する必要あり</strong></li>
+            <li><span>実装負荷</span><strong>中。ナイトテーマの核として流用可能</strong></li>
+          </ul>
+          <div class="reference-links" aria-label="参考デザイン">
+            <a href="https://styles.refero.design/style/1f204e95-454a-437e-845b-c1b169d35607" target="_blank" rel="noreferrer">ORYZO AI ↗</a>
+            <a href="https://styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1" target="_blank" rel="noreferrer">Linear ↗</a>
+          </div>
+          <button class="select-concept" type="button" aria-pressed="true" disabled>ナイトモードを採用</button>
+          <div class="selected-banner" aria-live="polite">OLED配色だけを統合</div>
+        </div>
+        <div class="phone-wrap"><div class="phone" data-phone="C"><div class="phone-mount"></div></div></div>
+      </article>
+
+      <article class="concept concept-d" data-concept="D">
+        <div class="concept-copy">
+          <span class="concept-id">D · Native clarity</span>
+          <h2>Native Clarity</h2>
+          <p class="concept-tagline">iOS・Androidの標準アプリに近い安心感を優先する案。白と薄いグレー、大きな余白、ひとつの青だけで、説明なしでも触れることを狙います。</p>
+          <ul class="trait-list">
+            <li><span>印象</span><strong>清潔・明快・信頼できる</strong></li>
+            <li><span>独自性</span><strong>控えめ。音声モーションで補う必要あり</strong></li>
+            <li><span>操作性</span><strong>最も予測しやすく、学習コストが低い</strong></li>
+            <li><span>実装負荷</span><strong>低。短納期に強い</strong></li>
+          </ul>
+          <div class="reference-links" aria-label="参考デザイン">
+            <a href="https://styles.refero.design/style/c9cabb96-32fa-4896-837a-f2497ce1c856" target="_blank" rel="noreferrer">Apple España ↗</a>
+            <a href="https://styles.refero.design/style/3f296d6e-6a1c-45db-829b-afb078d49ab4" target="_blank" rel="noreferrer">Refero ↗</a>
+          </div>
+          <button class="select-concept" type="button" aria-pressed="false" disabled>操作規則のみ参考</button>
+          <div class="selected-banner" aria-live="polite">外観は採用しません</div>
+        </div>
+        <div class="phone-wrap"><div class="phone" data-phone="D"><div class="phone-mount"></div></div></div>
+      </article>
+    </section>
+
+    <section class="recommendation">
+      <div>
+        <p class="kicker" style="color:#aebbb2">Final direction</p>
+        <h2>One system,<br>three moods.</h2>
+      </div>
+      <div class="recommendation-copy">
+        <p><strong>Quiet Linenへ確定しました。</strong> Aを昼の基本骨格にし、Bの罫線・時刻列・余白をタイムラインへ、CのOLED黒・クリーム文字・減光アンバーを22時〜6時のナイトモードへ取り込みます。</p>
+        <p>画面ごとに別スタイルへはせず、色・角丸・書体・音声状態のルールは1本に固定します。Dは48pt操作領域や予測しやすい配置の参考に留めます。</p>
+        <div class="selection-output" aria-live="polite">確定：<span id="selection-value">Quiet Linen（A + Bタイムライン + Cナイト）</span></div>
+      </div>
+    </section>
+  </main>
+
+  <template id="phone-template">
+    <div class="phone-inner">
+      <div class="status-bar" aria-hidden="true">
+        <span>03:12</span>
+        <span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="battery"></span></span>
+      </div>
+
+      <div class="screens">
+        <section class="app-screen home-screen is-active" data-screen="home" aria-label="ホーム画面">
+          <header class="app-header">
+            <div><div class="app-eyebrow" data-ja="おはようございます" data-en="Good morning">おはようございます</div><div class="brand">Nenelog</div></div>
+            <span class="baby-chip" data-ja="ゆうと · 3か月" data-en="Yuto · 3 months">ゆうと · 3か月</span>
+          </header>
+
+          <section class="hero-card">
+            <div class="app-eyebrow" data-ja="前回の授乳から" data-en="Since last feeding">前回の授乳から</div>
+            <span class="hero-time">2<small data-ja="時間" data-en="hr">時間</small>18<small data-ja="分" data-en="min">分</small></span>
+            <span class="hero-hint" data-ja="次の目安 10:35" data-en="Next around 10:35">次の目安 10:35</span>
+          </section>
+
+          <div class="voice-state" aria-live="polite">
+            <span class="voice-icon"><svg class="icon" aria-hidden="true"><use href="#icon-mic"></use></svg></span>
+            <span class="voice-copy"><strong data-ja="声を待っています" data-en="Listening for your voice">声を待っています</strong><span data-ja="「右スタート」と話してください" data-en="Say “start right”">「右スタート」と話してください</span></span>
+            <span class="mini-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+          </div>
+
+          <div class="section-heading"><h3 data-ja="クイック記録" data-en="Quick log">クイック記録</h3><span data-ja="声でも操作できます" data-en="Voice ready">声でも操作できます</span></div>
+          <div class="quick-grid">
+            <button class="quick-action" type="button" data-open-timer><svg class="icon" aria-hidden="true"><use href="#icon-nursing"></use></svg><span data-ja="授乳" data-en="Nursing">授乳</span></button>
+            <button class="quick-action" type="button" data-log="bottle"><svg class="icon" aria-hidden="true"><use href="#icon-bottle"></use></svg><span data-ja="ミルク" data-en="Bottle">ミルク</span></button>
+            <button class="quick-action" type="button" data-log="diaper"><svg class="icon" aria-hidden="true"><use href="#icon-diaper"></use></svg><span data-ja="おむつ" data-en="Diaper">おむつ</span></button>
+            <button class="quick-action" type="button" data-log="sleep"><svg class="icon" aria-hidden="true"><use href="#icon-moon"></use></svg><span data-ja="睡眠" data-en="Sleep">睡眠</span></button>
+          </div>
+
+          <div class="section-heading"><h3 data-ja="今日" data-en="Today">今日</h3><span data-ja="8件" data-en="8 logs">8件</span></div>
+          <article class="timeline-item">
+            <span class="timeline-mark"><svg class="icon" aria-hidden="true"><use href="#icon-nursing"></use></svg></span>
+            <span class="timeline-copy"><strong data-ja="授乳 · 左8分 右6分" data-en="Nursing · L 8m R 6m">授乳 · 左8分 右6分</strong><span data-ja="音声で記録" data-en="Logged by voice">音声で記録</span></span>
+            <span class="timeline-time" data-ja="42分前" data-en="42m ago">42分前</span>
+          </article>
+        </section>
+
+        <section class="app-screen timer-screen" data-screen="timer" aria-label="授乳タイマー画面">
+          <header class="app-header"><div><div class="app-eyebrow" data-ja="セッション" data-en="Session">セッション</div><div class="brand" data-ja="授乳タイマー" data-en="Nursing timer">授乳タイマー</div></div><span class="live-chip" data-ja="認識中" data-en="Listening">認識中</span></header>
+          <div class="timer-stage">
+            <span class="timer-status" data-timer-status data-ja="左を計測中" data-en="Timing left">左を計測中</span>
+            <strong class="timer-number">08:42</strong>
+            <div class="side-controls">
+              <button class="side-control is-selected" type="button" data-side="left" aria-pressed="true"><strong data-ja="左" data-en="Left">左</strong><span>08:42</span></button>
+              <button class="side-control" type="button" data-side="right" aria-pressed="false"><strong data-ja="右" data-en="Right">右</strong><span>04:16</span></button>
+            </div>
+          </div>
+
+          <div class="voice-state" aria-live="polite">
+            <span class="voice-icon"><svg class="icon" aria-hidden="true"><use href="#icon-mic"></use></svg></span>
+            <span class="voice-copy"><strong data-voice-title data-ja="聞いています" data-en="Listening">聞いています</strong><span data-ja="「右」「ストップ」と話せます" data-en="Say “right” or “stop”">「右」「ストップ」と話せます</span></span>
+            <span class="mini-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+          </div>
+
+          <button class="stop-button" type="button" data-stop><span data-ja="停止して保存" data-en="Stop &amp; save">停止して保存</span></button>
+          <div class="session-breakdown"><strong data-ja="今回" data-en="Session">今回</strong><span class="session-line"></span><span data-ja="左 08:42 · 右 04:16" data-en="Left 08:42 · Right 04:16">左 08:42 · 右 04:16</span></div>
+        </section>
+
+        <section class="app-screen summary-screen" data-screen="summary" aria-label="今日のまとめ画面">
+          <header class="app-header"><div><div class="app-eyebrow" data-ja="2026年9月4日" data-en="September 4, 2026">2026年9月4日</div><div class="brand" data-ja="今日のまとめ" data-en="Today’s summary">今日のまとめ</div></div><span class="date-chip" data-ja="今日" data-en="Today">今日</span></header>
+
+          <section class="summary-lead">
+            <div class="app-eyebrow" data-ja="24時間の記録" data-en="Last 24 hours">24時間の記録</div>
+            <strong data-ja="よく飲んで、よく眠れた一日。" data-en="A well-fed, well-rested day.">よく飲んで、よく眠れた一日。</strong>
+            <p data-ja="授乳間隔は平均2時間34分。昨日より12分ゆったりしています。" data-en="Average feeding interval was 2h 34m, 12 minutes longer than yesterday.">授乳間隔は平均2時間34分。昨日より12分ゆったりしています。</p>
+          </section>
+
+          <div class="metric-grid">
+            <div class="metric"><span class="metric-label" data-ja="授乳" data-en="Nursing">授乳</span><strong data-ja="7回" data-en="7×">7回</strong></div>
+            <div class="metric"><span class="metric-label" data-ja="ミルク" data-en="Bottle">ミルク</span><strong>160ml</strong></div>
+            <div class="metric"><span class="metric-label" data-ja="睡眠" data-en="Sleep">睡眠</span><strong data-ja="13時間" data-en="13 hr">13時間</strong></div>
+          </div>
+
+          <section class="chart-card">
+            <div class="chart-head"><strong data-ja="授乳間隔" data-en="Feeding interval">授乳間隔</strong><span data-ja="過去7日" data-en="Last 7 days">過去7日</span></div>
+            <div class="bar-chart" role="img" aria-label="過去7日間の授乳間隔棒グラフ">
+              <div class="bar-column" style="--bar-height:43%"><i class="bar"></i><span>金</span></div>
+              <div class="bar-column" style="--bar-height:61%"><i class="bar"></i><span>土</span></div>
+              <div class="bar-column" style="--bar-height:54%"><i class="bar"></i><span>日</span></div>
+              <div class="bar-column" style="--bar-height:72%"><i class="bar"></i><span>月</span></div>
+              <div class="bar-column" style="--bar-height:64%"><i class="bar"></i><span>火</span></div>
+              <div class="bar-column" style="--bar-height:78%"><i class="bar"></i><span>水</span></div>
+              <div class="bar-column today" style="--bar-height:68%"><i class="bar"></i><span>木</span></div>
+            </div>
+          </section>
+          <button class="listen-button" type="button" data-listen><svg class="icon" aria-hidden="true"><use href="#icon-volume"></use></svg><span data-ja="声でまとめを聞く" data-en="Listen to summary">声でまとめを聞く</span></button>
+        </section>
+      </div>
+
+      <nav class="bottom-nav" aria-label="アプリ内ナビゲーション">
+        <button class="nav-button is-active" type="button" data-screen-target="home" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-home"></use></svg><span data-ja="ホーム" data-en="Home">ホーム</span></button>
+        <button class="nav-button" type="button" data-screen-target="timer"><svg class="icon" aria-hidden="true"><use href="#icon-plus"></use></svg><span data-ja="記録" data-en="Log">記録</span></button>
+        <button class="nav-button" type="button" data-screen-target="summary"><svg class="icon" aria-hidden="true"><use href="#icon-chart"></use></svg><span data-ja="まとめ" data-en="Summary">まとめ</span></button>
+      </nav>
+      <div class="app-toast" role="status" aria-live="polite"></div>
+    </div>
+  </template>
+
+  <script>
+    const template = document.querySelector('#phone-template');
+    const phones = [];
+    let currentLanguage = 'ja';
+
+    document.querySelectorAll('.phone-mount').forEach((mount) => {
+      const clone = template.content.cloneNode(true);
+      mount.appendChild(clone);
+      phones.push(mount.closest('.phone'));
+    });
+
+    function applyLanguage(root, language) {
+      root.querySelectorAll('[data-ja][data-en]').forEach((element) => {
+        element.textContent = element.dataset[language];
+      });
+    }
+
+    function showScreen(phone, screenName) {
+      phone.querySelectorAll('.app-screen').forEach((screen) => {
+        screen.classList.toggle('is-active', screen.dataset.screen === screenName);
+      });
+      phone.querySelectorAll('[data-screen-target]').forEach((button) => {
+        const active = button.dataset.screenTarget === screenName;
+        button.classList.toggle('is-active', active);
+        if (active) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
+    }
+
+    function showToast(phone, japanese, english) {
+      const toast = phone.querySelector('.app-toast');
+      toast.textContent = currentLanguage === 'ja' ? japanese : english;
+      toast.classList.add('is-visible');
+      window.clearTimeout(phone.toastTimer);
+      phone.toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 1600);
+    }
+
+    document.querySelectorAll('[data-global-screen]').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('[data-global-screen]').forEach((item) => {
+          item.setAttribute('aria-pressed', String(item === button));
+        });
+        phones.forEach((phone) => showScreen(phone, button.dataset.globalScreen));
+      });
+    });
+
+    document.querySelectorAll('[data-language]').forEach((button) => {
+      button.addEventListener('click', () => {
+        currentLanguage = button.dataset.language;
+        document.documentElement.lang = currentLanguage;
+        document.querySelectorAll('[data-language]').forEach((item) => {
+          item.setAttribute('aria-pressed', String(item === button));
+        });
+        phones.forEach((phone) => applyLanguage(phone, currentLanguage));
+      });
+    });
+
+    document.querySelectorAll('[data-selected-theme]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const isNight = button.dataset.selectedTheme === 'night';
+        document.querySelectorAll('[data-selected-theme]').forEach((item) => {
+          item.setAttribute('aria-pressed', String(item === button));
+        });
+        document.querySelector('.concept-a').classList.toggle('preview-night', isNight);
+      });
+    });
+
+    phones.forEach((phone) => {
+      phone.querySelectorAll('[data-screen-target]').forEach((button) => {
+        button.addEventListener('click', () => showScreen(phone, button.dataset.screenTarget));
+      });
+
+      phone.querySelector('[data-open-timer]').addEventListener('click', () => showScreen(phone, 'timer'));
+
+      phone.querySelectorAll('[data-log]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const messages = {
+            bottle: ['ミルクを記録しました', 'Bottle logged'],
+            diaper: ['おむつを記録しました', 'Diaper logged'],
+            sleep: ['睡眠を開始しました', 'Sleep timer started'],
+          };
+          showToast(phone, ...messages[button.dataset.log]);
+        });
+      });
+
+      phone.querySelectorAll('[data-side]').forEach((button) => {
+        button.addEventListener('click', () => {
+          phone.querySelectorAll('[data-side]').forEach((sideButton) => {
+            const selected = sideButton === button;
+            sideButton.classList.toggle('is-selected', selected);
+            sideButton.setAttribute('aria-pressed', String(selected));
+          });
+          const isLeft = button.dataset.side === 'left';
+          const status = phone.querySelector('[data-timer-status]');
+          status.dataset.ja = isLeft ? '左を計測中' : '右を計測中';
+          status.dataset.en = isLeft ? 'Timing left' : 'Timing right';
+          status.textContent = status.dataset[currentLanguage];
+          showToast(phone, isLeft ? '左、スタート' : '右、スタート', isLeft ? 'Left started' : 'Right started');
+        });
+      });
+
+      phone.querySelector('[data-stop]').addEventListener('click', () => {
+        phone.querySelectorAll('[data-side]').forEach((button) => {
+          button.classList.remove('is-selected');
+          button.setAttribute('aria-pressed', 'false');
+        });
+        const status = phone.querySelector('[data-timer-status]');
+        status.dataset.ja = '保存しました';
+        status.dataset.en = 'Saved';
+        status.textContent = status.dataset[currentLanguage];
+        showToast(phone, '授乳を保存しました', 'Nursing session saved');
+      });
+
+      phone.querySelector('[data-listen]').addEventListener('click', () => {
+        showToast(phone, '今日のまとめを読み上げます', 'Reading today’s summary');
+      });
+    });
+
+  </script>
+</body>
+</html>
