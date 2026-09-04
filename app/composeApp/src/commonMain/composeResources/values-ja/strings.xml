@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">ネネログ</string>
+    <string name="tagline">手を使わず、声だけで残せる育児記録。</string>
+    <string name="nursing_timer">授乳タイマー</string>
+    <string name="status_idle">待機中</string>
+    <string name="status_left">左を計測中</string>
+    <string name="status_right">右を計測中</string>
+    <string name="status_paused">一時停止中</string>
+    <string name="left">左</string>
+    <string name="right">右</string>
+    <string name="start">スタート</string>
+    <string name="in_progress">計測中</string>
+    <string name="switch_side">交代</string>
+    <string name="stop_and_save">停止して記録</string>
+    <string name="timeline_title">最近の授乳</string>
+    <string name="timeline_empty">授乳を終えると、ここに記録が表示されます。</string>
+    <string name="nursing_record">授乳</string>
+    <string name="duration_minutes">%1$d分</string>
+    <string name="side_duration">左 %1$d分・右 %2$d分</string>
+    <string name="just_now">たった今</string>
+    <string name="minutes_ago">%1$d分前</string>
+    <string name="hours_ago">%1$d時間前</string>
+    <string name="source_siri">Siri</string>
+    <string name="source_voice">音声</string>
+    <string name="source_tap">タップ</string>
+    <string name="auto_closed">自動保存</string>
+    <string name="voice_listening">音声操作中：「左」「右」「ストップ」と話しかけてください。</string>
+    <string name="voice_unavailable">音声操作はオフです。マイクの許可を確認してください。</string>
+</resources>

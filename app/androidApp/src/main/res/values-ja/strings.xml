@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_channel_name">授乳の音声セッション</string>
+    <string name="voice_notification_title">ネネログが音声を待っています</string>
+    <string name="voice_notification_text">「左」「右」「ストップ」と話しかけてください。</string>
+    <string name="stop_and_save">停止して記録</string>
+</resources>

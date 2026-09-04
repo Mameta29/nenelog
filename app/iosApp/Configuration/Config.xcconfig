@@ -1,0 +1,5 @@
+TEAM_ID=9R69BXRA4R
+BUNDLE_ID=app.nenelog.nenelog
+APP_NAME=Nenelog
+// SQLDelight NativeSqliteDriver uses the system SQLite symbols from libsqlite3.
+OTHER_LDFLAGS=$(inherited) -lsqlite3

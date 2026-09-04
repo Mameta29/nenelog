@@ -1,0 +1,5 @@
+"CFBundleDisplayName" = "ネネログ";
+"CFBundleName" = "ネネログ";
+"CFBundleSpokenName" = "ネネログ";
+"NSMicrophoneUsageDescription" = "授乳セッション中の音声コマンド認識にのみ使用し、音声を当社サーバーに送信・保存しません。";
+"NSSpeechRecognitionUsageDescription" = "授乳コマンドを端末上で文字に変換し、音声を当社サーバーに送信・保存しません。";

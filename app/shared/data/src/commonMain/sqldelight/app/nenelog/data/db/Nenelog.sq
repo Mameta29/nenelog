@@ -1,0 +1,120 @@
+CREATE TABLE events (
+    id TEXT NOT NULL PRIMARY KEY,
+    baby_id TEXT NOT NULL,
+    caregiver_id TEXT NOT NULL,
+    occurred_at INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    source TEXT NOT NULL,
+    payload_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    revoked_by TEXT,
+    timezone_id TEXT NOT NULL
+);
+
+CREATE INDEX events_occurred_at_idx ON events(occurred_at, id);
+CREATE INDEX events_created_at_idx ON events(created_at, id);
+
+CREATE TABLE active_session (
+    singleton_id INTEGER NOT NULL PRIMARY KEY CHECK (singleton_id = 1),
+    snapshot_json TEXT NOT NULL,
+    source TEXT NOT NULL,
+    caregiver_id TEXT NOT NULL,
+    timezone_id TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+insertEvent:
+INSERT INTO events(
+    id,
+    baby_id,
+    caregiver_id,
+    occurred_at,
+    created_at,
+    source,
+    payload_type,
+    payload_json,
+    revoked_by,
+    timezone_id
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAllEvents:
+SELECT
+    id,
+    baby_id,
+    caregiver_id,
+    occurred_at,
+    created_at,
+    source,
+    payload_type,
+    payload_json,
+    revoked_by
+FROM events
+ORDER BY occurred_at, id;
+
+selectActiveEvents:
+SELECT
+    id,
+    baby_id,
+    caregiver_id,
+    occurred_at,
+    created_at,
+    source,
+    payload_type,
+    payload_json,
+    revoked_by
+FROM events
+WHERE revoked_by IS NULL AND payload_type != 'revocation'
+ORDER BY occurred_at, id;
+
+selectEventById:
+SELECT
+    id,
+    baby_id,
+    caregiver_id,
+    occurred_at,
+    created_at,
+    source,
+    payload_type,
+    payload_json,
+    revoked_by
+FROM events
+WHERE id = ?;
+
+selectLatestActiveEvent:
+SELECT
+    id,
+    baby_id,
+    caregiver_id,
+    occurred_at,
+    created_at,
+    source,
+    payload_type,
+    payload_json,
+    revoked_by
+FROM events
+WHERE revoked_by IS NULL AND payload_type != 'revocation'
+ORDER BY created_at DESC, id DESC
+LIMIT 1;
+
+markEventRevoked:
+UPDATE events SET revoked_by = ? WHERE id = ? AND revoked_by IS NULL;
+
+saveActiveSession:
+INSERT OR REPLACE INTO active_session(
+    singleton_id,
+    snapshot_json,
+    source,
+    caregiver_id,
+    timezone_id,
+    updated_at
+)
+VALUES (1, ?, ?, ?, ?, ?);
+
+selectActiveSession:
+SELECT snapshot_json, source, caregiver_id, timezone_id
+FROM active_session
+WHERE singleton_id = 1;
+
+clearActiveSession:
+DELETE FROM active_session WHERE singleton_id = 1;

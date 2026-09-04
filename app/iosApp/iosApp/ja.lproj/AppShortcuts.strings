@@ -1,0 +1,4 @@
+"${applicationName}で${side}スタート" = "${applicationName}で${side}スタート";
+"Start ${side} on ${applicationName}" = "${applicationName}で${side}の授乳を開始";
+"${applicationName}でストップ" = "${applicationName}でストップ";
+"Stop nursing on ${applicationName}" = "${applicationName}で授乳を停止";

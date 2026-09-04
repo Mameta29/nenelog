@@ -1,0 +1,5 @@
+"CFBundleDisplayName" = "Nenelog";
+"CFBundleName" = "Nenelog";
+"CFBundleSpokenName" = "Nenelog";
+"NSMicrophoneUsageDescription" = "Nenelog uses the microphone only to recognize commands during a nursing session. Audio is never stored or sent to our servers.";
+"NSSpeechRecognitionUsageDescription" = "Nenelog converts nursing commands into text on this device. Audio is never stored or sent to our servers.";

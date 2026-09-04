@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_channel_name">Nursing voice session</string>
+    <string name="voice_notification_title">Nenelog is listening</string>
+    <string name="voice_notification_text">Say “Left”, “Right”, or “Stop”.</string>
+    <string name="stop_and_save">Stop &amp; save</string>
+</resources>

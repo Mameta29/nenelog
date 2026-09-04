@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Nenelog</string>
+    <string name="tagline">The hands-free baby tracker that talks back.</string>
+    <string name="nursing_timer">Nursing timer</string>
+    <string name="status_idle">Ready</string>
+    <string name="status_left">Left side in progress</string>
+    <string name="status_right">Right side in progress</string>
+    <string name="status_paused">Paused</string>
+    <string name="left">Left</string>
+    <string name="right">Right</string>
+    <string name="start">Start</string>
+    <string name="in_progress">In progress</string>
+    <string name="switch_side">Switch</string>
+    <string name="stop_and_save">Stop &amp; save</string>
+    <string name="timeline_title">Recent nursing</string>
+    <string name="timeline_empty">Your completed nursing sessions will appear here.</string>
+    <string name="nursing_record">Nursing</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="side_duration">Left %1$d min · Right %2$d min</string>
+    <string name="just_now">Just now</string>
+    <string name="minutes_ago">%1$d min ago</string>
+    <string name="hours_ago">%1$d hr ago</string>
+    <string name="source_siri">Siri</string>
+    <string name="source_voice">Voice</string>
+    <string name="source_tap">Tap</string>
+    <string name="auto_closed">Auto-saved</string>
+    <string name="voice_listening">Voice control is on: say “Left”, “Right”, or “Stop”.</string>
+    <string name="voice_unavailable">Voice control is off. Check microphone permission.</string>
+</resources>
