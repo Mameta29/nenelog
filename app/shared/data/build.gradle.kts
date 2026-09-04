@@ -48,6 +48,7 @@ sqldelight {
     databases {
         create("NenelogDatabase") {
             packageName.set("app.nenelog.data.db")
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
             verifyMigrations.set(true)
         }
     }
